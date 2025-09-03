@@ -40,10 +40,10 @@ def process_orders(app):
             response.raise_for_status()
 
             order.set_as_processed()
-            save_order(order)
         except:
             order.set_as_failed()
             app.logger.exception("Error processing order {id}".format(id = order.id))
+        save_order(order)
 
 def get_queue_of_orders_to_process():
     allOrders = get_all_orders()

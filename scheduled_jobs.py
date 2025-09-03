@@ -14,7 +14,6 @@ def initialise_scheduled_jobs(app):
     )
     scheduler.start()
 
-
 def process_orders(app):
     with app.app_context():
         orders = get_queue_of_orders_to_process()
@@ -43,10 +42,12 @@ def process_orders(app):
             order.set_as_processed()
             save_order(order)
         except:
+            order.set_as_failed()
             app.logger.exception("Error processing order {id}".format(id = order.id))
 
 def get_queue_of_orders_to_process():
     allOrders = get_all_orders()
-    queuedOrders = filter(lambda order: order.date_processed == None, allOrders)
+    nonFailedOrders = filter(lambda order: order.status == "Failed", allOrders)
+    queuedOrders = filter(lambda order: order.date_processed == None, nonFailedOrders)
     sortedQueue = sorted(queuedOrders, key= lambda order: order.date_placed)
     return list(sortedQueue)
